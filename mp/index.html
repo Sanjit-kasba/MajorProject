@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntraView – AI Interview System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+    <script type="importmap">
+    { "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    } }
+    </script>
+</head>
+<body class="bg-slate-950 text-slate-100 overflow-x-hidden">
+
+<div id="user-menu-wrapper" class="hidden fixed top-6 right-6 z-50 pointer-events-auto">
+        <div class="relative">
+            <button id="user-menu-btn" onclick="toggleUserMenu()" class="flex items-center justify-center w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-full border border-slate-600 transition-all shadow-lg focus:outline-none">
+                <i data-lucide="user" class="w-5 h-5 text-slate-300"></i>
+            </button>
+
+            <div id="user-menu" class="hidden absolute right-0 mt-3 w-72 bg-[#282828] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[100]">
+                
+                <div class="flex items-center gap-4 p-4 border-b border-white/10">
+                    <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-white">
+                        <i data-lucide="user" class="w-6 h-6"></i>
+                    </div>
+                    <div class="flex flex-col text-left">
+                        <span class="text-sm font-medium text-white" id="dropdown-full-name">Guest</span>
+                        <span class="text-xs text-slate-400" id="dropdown-username">@guest</span>
+                    </div>
+                </div>
+
+                <div class="py-2">
+                    <button onclick="loadProfile()" class="w-full flex items-center gap-4 px-4 py-2.5 hover:bg-white/10 text-white transition-colors">
+                        <i data-lucide="user-circle" class="w-5 h-5 opacity-70"></i>
+                        <span class="text-sm">Profile</span>
+                    </button>
+
+                    <button onclick="loadHistory()" class="w-full flex items-center gap-4 px-4 py-2.5 hover:bg-white/10 text-white transition-colors">
+                        <i data-lucide="history" class="w-5 h-5 opacity-70"></i>
+                        <span class="text-sm">History</span>
+                    </button>
+
+                    <div class="border-t border-white/10 mt-2 pt-2">
+                        <button onclick="logout()" class="w-full flex items-center gap-4 px-4 py-2.5 hover:bg-white/10 text-red-400 hover:text-red-300 transition-colors">
+                            <i data-lucide="log-out" class="w-5 h-5 opacity-70"></i>
+                            <span class="text-sm">Sign out</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Background Gradient Effects -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen active flex items-center justify-center relative z-10 p-4">
+        <div class="w-full max-w-md">
+            <div class="text-center mb-10">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 mb-6 shadow-lg shadow-indigo-500/30">
+                    <i data-lucide="cpu" class="w-8 h-8 text-white"></i>
+                </div>
+                <h1 class="text-4xl font-bold mb-3 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    IntraView
+                </h1>
+                <p class="text-slate-400 text-lg">AI-Powered Interview System</p>
+            </div>
+
+            <div class="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 shadow-2xl">
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-slate-400 mb-2">Username</label>
+                    <div class="relative mb-4">
+                        <i data-lucide="user" class="absolute left-4 top-3.5 w-5 h-5 text-slate-500"></i>
+                        <input type="text" id="username-input" placeholder="Enter username" 
+                            class="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all text-slate-100 placeholder-slate-500">
+                    </div>
+                    
+                    <label class="block text-sm font-medium text-slate-400 mb-2">Password</label>
+                    <div class="relative">
+                        <i data-lucide="lock" class="absolute left-4 top-3.5 w-5 h-5 text-slate-500"></i>
+                        <input type="password" id="password-input" placeholder="Enter password" 
+                            class="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all text-slate-100 placeholder-slate-500">
+                    </div>
+                </div>
+
+                <button onclick="login()" 
+                    class="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/25 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 group">
+                    <span>Login</span>
+                    <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+                </button>
+                <div class="link mt-4 cursor-pointer text-center text-slate-400 hover:text-indigo-400 transition-colors" onclick="showScreen('signup-screen')">
+                  No account? Create one
+                </div>
+
+                <div class="mt-6 flex items-center justify-center gap-2 text-sm text-slate-500">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                    <span>Secure & Confidential</span>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-center gap-8 text-slate-500 text-sm">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="mic" class="w-4 h-4"></i>
+                    <span>Voice Analysis</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i data-lucide="brain" class="w-4 h-4"></i>
+                    <span>AI Feedback</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                    <span>Real-time Scoring</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- ADD THIS BELOW LOGIN SCREEN -->
+
+
+
+
+<!-- Signup Screen -->
+<div id="signup-screen" class="screen flex items-center justify-center relative z-10 p-4">
+        <div class="w-full max-w-md">
+            <div class="text-center mb-10">
+                <h1 class="text-3xl font-bold text-indigo-400">Create Account</h1>
+            </div>
+
+            <div class="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl p-8">
+                <input id="signup-fullname" placeholder="Full Name (e.g. John Doe)" class="w-full p-3 mb-4 bg-slate-800 border border-slate-700 rounded-xl focus:border-indigo-500 outline-none text-white transition-colors">
+                <input id="signup-email" type="email" placeholder="Email Address" class="w-full p-3 mb-4 bg-slate-800 border border-slate-700 rounded-xl focus:border-indigo-500 outline-none text-white transition-colors">
+                
+                <select id="signup-role" class="w-full p-3 mb-4 bg-slate-800 border border-slate-700 rounded-xl focus:border-indigo-500 outline-none text-slate-400 appearance-none transition-colors">
+                    <option value="" disabled selected>Select Target Role...</option>
+                    <option value="Software Engineer">Software Engineer</option>
+                    <option value="Data Scientist">Data Scientist</option>
+                    <option value="Product Manager">Product Manager</option>
+                    <option value="HR Professional">HR Professional</option>
+                </select>
+
+                <input id="signup-username" placeholder="Username" class="w-full p-3 mb-4 bg-slate-800 border border-slate-700 rounded-xl focus:border-indigo-500 outline-none text-white transition-colors">
+                <input id="signup-password" type="password" placeholder="Password" class="w-full p-3 mb-4 bg-slate-800 border border-slate-700 rounded-xl focus:border-indigo-500 outline-none text-white transition-colors">
+
+                <button onclick="signup()" class="w-full py-3 bg-indigo-600 rounded-xl font-bold text-white hover:bg-indigo-500 transition-colors shadow-lg">Sign Up</button>
+
+                <div class="mt-4 text-center text-slate-400 cursor-pointer hover:text-indigo-400" onclick="showScreen('login-screen')">
+                    Already have an account? Login
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Welcome Screen -->
+<div id="welcome-screen" class="screen flex items-center justify-center">
+    <div class="text-center">
+        <h1 id="welcome-text" class="text-3xl font-bold mb-6"></h1>
+        <button onclick="showScreen('setup-screen')" class="px-6 py-3 bg-indigo-600 rounded-xl">
+            Continue
+        </button>
+    </div>
+</div>
+
+<div id="history-screen" class="screen relative z-10 p-4 overflow-y-auto" style="display: none;">
+    <button onclick="showScreen('welcome-screen')" class="absolute top-5 left-5 text-sm text-slate-400 hover:text-white transition-colors">
+        ← Back to Home
+    </button>
+    
+    <div class="max-w-5xl mx-auto w-full mt-12">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold text-slate-100 mb-2">Interview History</h2>
+            <p class="text-slate-400">Review your past performances and progress</p>
+        </div>
+
+        <div id="history-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-10">
+            </div>
+    </div>
+</div>
+
+
+<div id="profile-screen" class="screen relative z-10 p-4" style="display: none;">
+    <button onclick="showScreen('welcome-screen')" class="absolute top-5 left-5 text-sm text-slate-400 hover:text-white transition-colors">
+        ← Back to Home
+    </button>
+    <div class="max-w-2xl mx-auto w-full mt-12">
+        <div class="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 shadow-2xl">
+            <div class="flex items-center gap-6 mb-8 pb-8 border-b border-slate-800">
+                <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                    <i data-lucide="user" class="w-12 h-12 text-white"></i>
+                </div>
+                <div>
+                    <h2 id="profile-fullname" class="text-3xl font-bold text-white mb-1">Loading...</h2>
+                    <p id="profile-username" class="text-indigo-400 font-medium">@username</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-1">
+                    <p class="text-sm text-slate-500 font-medium">Email Address</p>
+                    <p id="profile-email" class="text-slate-300">loading...</p>
+                </div>
+                <div class="space-y-1">
+                    <p class="text-sm text-slate-500 font-medium">Target Role</p>
+                    <p id="profile-role" class="text-slate-300">loading...</p>
+                </div>
+                <div class="space-y-1">
+                    <p class="text-sm text-slate-500 font-medium">Total Interviews</p>
+                    <p id="profile-total" class="text-slate-300 text-2xl font-bold">0</p>
+                </div>
+                <div class="space-y-1">
+                    <p class="text-sm text-slate-500 font-medium">Average Score</p>
+                    <p id="profile-avg-score" class="text-slate-300 text-2xl font-bold">0%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Interview Setup Screen -->
+<div id="setup-screen" class="screen flex items-center justify-center relative z-10 p-4">
+
+    <button onclick="showScreen('welcome-screen')" 
+    class="absolute top-5 left-5 text-sm text-slate-400">
+        ← Back
+    </button>
+
+    <div class="w-full max-w-lg">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-slate-100 mb-2">Interview Setup</h2>
+            <p class="text-slate-400">Configure your interview preferences</p>
+        </div>
+
+        <div class="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 shadow-2xl">
+            
+            <!-- Domain Selection -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-slate-400 mb-2 flex items-center gap-2">
+                    <i data-lucide="briefcase" class="w-4 h-4"></i>
+                    Select Domain
+                </label>
+                <div class="relative">
+                    <select id="domain-select" class="w-full pl-4 pr-10 py-3 bg-slate-800/50 border border-slate-700 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all text-slate-100 appearance-none cursor-pointer">
+                        <option value="Artificial Intelligence">Artificial Intelligence</option>
+                        <option value="Data Structures and Algorithms">Data Structures & Algorithms</option>
+                        <option value="Cybersecurity">Cybersecurity</option>
+                        <option value="Web Development">Web Development</option>
+                        <option value="Cloud Computing">Cloud Computing</option>
+                    </select>
+                    <i data-lucide="chevron-down" class="absolute right-4 top-3.5 w-5 h-5 text-slate-500 pointer-events-none"></i>
+                </div>
+            </div>
+
+                <!-- Difficulty Selection -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-slate-400 mb-2 flex items-center gap-2">
+                        <i data-lucide="gauge" class="w-4 h-4"></i>
+                        Difficulty Level
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button onclick="selectDifficulty('easy')" id="diff-easy" class="difficulty-btn py-3 px-4 rounded-xl border border-slate-700 bg-slate-800/50 text-slate-400 hover:border-indigo-500/50 hover:text-indigo-400 transition-all text-sm font-medium">
+                            Easy
+                        </button>
+                        <button onclick="selectDifficulty('medium')" id="diff-medium" class="difficulty-btn py-3 px-4 rounded-xl border border-indigo-500 bg-indigo-600/20 text-indigo-400 transition-all text-sm font-medium">
+                            Medium
+                        </button>
+                        <button onclick="selectDifficulty('hard')" id="diff-hard" class="difficulty-btn py-3 px-4 rounded-xl border border-slate-700 bg-slate-800/50 text-slate-400 hover:border-indigo-500/50 hover:text-indigo-400 transition-all text-sm font-medium">
+                            Hard
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Language Selection -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-slate-400 mb-2 flex items-center gap-2">
+                        <i data-lucide="languages" class="w-4 h-4"></i>
+                        Language
+                    </label>
+                    <div class="relative">
+                        <select id="language-select" class="w-full pl-4 pr-10 py-3 bg-slate-800/50 border border-slate-700 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all text-slate-100 appearance-none cursor-pointer">
+                            <option value="english">English</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="absolute right-4 top-3.5 w-5 h-5 text-slate-500 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- Mode Selection -->
+                <div class="mb-8">
+                    <label class="block text-sm font-medium text-slate-400 mb-3 flex items-center gap-2">
+                        <i data-lucide="video" class="w-4 h-4"></i>
+                        Interview Mode
+                    </label>
+                    <div class="space-y-3">
+                        <label class="flex items-center justify-between p-4 rounded-xl border border-indigo-500 bg-indigo-600/10 cursor-pointer transition-all hover:bg-indigo-600/20" id="mode-video-label" onclick="selectMode('video')">
+                            <div class="flex items-center gap-3">
+                                <div class="w-5 h-5 rounded-full border-2 border-indigo-500 flex items-center justify-center">
+                                    <div class="w-2.5 h-2.5 rounded-full bg-indigo-500" id="mode-video-dot"></div>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-slate-100">Avatar + Voice</p>
+                                    <p class="text-xs text-slate-400">Face-to-face with a 3D AI interviewer</p>
+                                </div>
+                            </div>
+                            <i data-lucide="video" class="w-5 h-5 text-indigo-400"></i>
+                        </label>
+
+                        <label class="flex items-center justify-between p-4 rounded-xl border border-slate-700 bg-slate-800/50 cursor-pointer transition-all hover:border-slate-600" id="mode-voice-label" onclick="selectMode('voice')">
+                            <div class="flex items-center gap-3">
+                                <div class="w-5 h-5 rounded-full border-2 border-slate-600 flex items-center justify-center" id="mode-voice-dot-container">
+                                    <div class="w-2.5 h-2.5 rounded-full bg-transparent" id="mode-voice-dot"></div>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-slate-100">Voice Only</p>
+                                    <p class="text-xs text-slate-400">Audio-based interview</p>
+                                </div>
+                            </div>
+                            <i data-lucide="mic" class="w-5 h-5 text-slate-400"></i>
+                        </label>
+                    </div>
+                </div>
+
+                <button onclick="startInterview()" 
+                    class="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/25 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 group">
+                    <span>Start Interview</span>
+                    <i data-lucide="play" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interview Screen -->
+    <div id="interview-screen" class="screen relative z-10 flex flex-col">
+        <!-- Header -->
+        <header class="border-b border-slate-800/50 bg-slate-900/30 backdrop-blur-md">
+            <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                        <i data-lucide="cpu" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-semibold text-slate-100">IntraView</h2>
+                        <p class="text-xs text-slate-400">AI Interview Session</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <button onclick="endInterview()" class="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-full text-sm font-medium transition-colors">
+                        End Interview
+                    </button>
+    
+                    <div class="flex items-center gap-2 text-slate-400">
+                        <i data-lucide="user" class="w-4 h-4"></i>
+                        <span class="text-sm" id="display-username">Guest</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 max-w-6xl mx-auto w-full p-4 grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+            
+            <!-- AI Video Section -->
+            <div class="relative aspect-video bg-slate-900 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl">
+                <div class="absolute inset-0 bg-gradient-to-br from-indigo-600/10 to-purple-600/10"></div>
+                
+                <!-- Video Player Area -->
+                <div class="absolute inset-0 flex items-center justify-center bg-slate-950">
+                    
+                    <div id="ai-voice-wave" class="absolute inset-0 flex items-center justify-center gap-2 bg-slate-900 hidden rounded-3xl z-10">
+                        <div class="bar bar-1"></div>
+                        <div class="bar bar-2"></div>
+                        <div class="bar bar-3"></div>
+                        <div class="bar bar-4"></div>
+                        <div class="bar bar-5"></div>
+                    </div>
+
+                    <div id="avatar-stage" class="w-full h-full rounded-3xl overflow-hidden"></div>
+                    
+                    <!-- Loading Spinner (shown during response generation) -->
+                    <div id="video-loading" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center">
+                        <div class="flex flex-col items-center gap-3">
+                            <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                            <span id="video-loading-text" class="text-sm text-indigo-400 font-medium">Generating response...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Interviewer Label -->
+                <div class="absolute bottom-4 left-4 px-3 py-1.5 bg-slate-950/80 backdrop-blur rounded-lg border border-slate-800 flex items-center gap-2">
+                    <i data-lucide="video" class="w-3 h-3 text-slate-300"></i>
+                    <span class="text-xs text-slate-300">AI Interviewer</span>
+                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse ml-1"></span>
+                </div>
+
+                <!-- Status Indicator -->
+                <div id="ai-status" class="absolute top-4 right-4 px-3 py-1.5 bg-slate-950/80 backdrop-blur rounded-full border border-slate-800 opacity-0 transition-opacity">
+                    <span class="text-xs text-indigo-400 flex items-center gap-2">
+                        <span class="w-2 h-2 bg-indigo-400 rounded-full animate-pulse"></span>
+                        <span id="ai-status-text">Speaking...</span>
+                    </span>
+                </div>
+
+                <!-- Domain & Language Badge -->
+                <div class="absolute top-4 left-4 flex gap-2">
+                    <span id="display-domain" class="px-3 py-1.5 bg-indigo-600/20 backdrop-blur rounded-lg border border-indigo-500/30 text-xs text-indigo-300 font-medium">
+                        General
+                    </span>
+                    <span id="display-language" class="px-3 py-1.5 bg-purple-600/20 backdrop-blur rounded-lg border border-purple-500/30 text-xs text-purple-300 font-medium">
+                        English
+                    </span>
+                </div>
+            </div>
+
+            <!-- Question & Controls Section -->
+            <div class="flex flex-col gap-6">
+                <!-- Question Card -->
+                <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-2 mb-4 text-indigo-400 text-sm font-medium">
+                        <i data-lucide="help-circle" class="w-4 h-4"></i>
+                        <span>Current Question</span>
+                        <span id="question-counter" class="ml-auto text-xs text-slate-500">Question 1 of 5</span>
+                    </div>
+                    <h3 id="question-text" class="text-2xl font-semibold text-slate-100 leading-relaxed">
+                        Tell me about yourself and your professional background.
+                    </h3>
+                </div>
+
+                <!-- Recording Controls -->
+                <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex flex-col items-center gap-6">
+                        
+                        <!-- Status Text -->
+                        <div id="recording-status" class="text-slate-400 font-medium flex items-center gap-2 h-6">
+                            <span>Click microphone to start recording</span>
+                        </div>
+
+                        <!-- Waveform Visualization (Hidden by default) -->
+                        <div id="waveform" class="hidden flex items-center gap-1 h-12">
+                            <div class="w-1 bg-indigo-500 rounded-full animate-waveform" style="height: 20%; animation-delay: 0s;"></div>
+                            <div class="w-1 bg-indigo-500 rounded-full animate-waveform" style="height: 60%; animation-delay: 0.1s;"></div>
+                            <div class="w-1 bg-indigo-500 rounded-full animate-waveform" style="height: 40%; animation-delay: 0.2s;"></div>
+                            <div class="w-1 bg-purple-500 rounded-full animate-waveform" style="height: 80%; animation-delay: 0.3s;"></div>
+                            <div class="w-1 bg-purple-500 rounded-full animate-waveform" style="height: 50%; animation-delay: 0.4s;"></div>
+                            <div class="w-1 bg-indigo-500 rounded-full animate-waveform" style="height: 70%; animation-delay: 0.5s;"></div>
+                            <div class="w-1 bg-indigo-500 rounded-full animate-waveform" style="height: 30%; animation-delay: 0.6s;"></div>
+                        </div>
+
+                        <!-- Timer -->
+                        <div id="recording-timer" class="hidden text-3xl font-mono font-bold text-slate-200 tabular-nums">
+                            00:00
+                        </div>
+
+                        <!-- Control Buttons -->
+                        <div class="flex items-center gap-4">
+                            <button id="mic-btn" onclick="toggleRecording()" 
+                                class="w-16 h-16 rounded-full bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 flex items-center justify-center transition-all hover:scale-110 active:scale-95 group relative">
+                                <i data-lucide="mic" class="w-6 h-6 text-slate-300 group-hover:text-white transition-colors"></i>
+                            </button>
+
+                            <button id="submit-btn" onclick="submitAnswer()" disabled
+                                class="px-6 py-3 bg-slate-800 text-slate-500 rounded-xl font-medium cursor-not-allowed transition-all flex items-center gap-2 border border-slate-700">
+                                <span>Submit Answer</span>
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Processing Status with Steps -->
+                <div id="processing-status" class="hidden bg-slate-900/80 backdrop-blur border border-slate-700 rounded-2xl p-6">
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3" id="status-listening">
+                            <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center">
+                                <i data-lucide="mic" class="w-4 h-4 text-slate-400"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-slate-300">Listening...</p>
+                                <div class="h-1 bg-slate-800 rounded-full mt-2 overflow-hidden">
+                                    <div class="h-full bg-indigo-500 rounded-full animate-pulse w-full"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3" id="status-processing">
+                            <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center">
+                                <div class="w-4 h-4 border-2 border-slate-600 border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-slate-500">Processing...</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3" id="status-generating">
+                            <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center">
+                                <i data-lucide="sparkles" class="w-4 h-4 text-slate-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-slate-500">Generating response...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer Progress -->
+        <footer class="border-t border-slate-800/50 bg-slate-900/30 backdrop-blur-md p-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex justify-between text-xs text-slate-500 mb-2">
+                    <span>Interview Progress</span>
+                    <span id="progress-percent">20%</span>
+                </div>
+                <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500" style="width: 20%"></div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Feedback Screen -->
+    <div id="feedback-screen" class="screen relative z-10 overflow-y-auto">
+        <div class="max-w-5xl mx-auto px-4 py-8">
+            
+            <!-- Header -->
+            <div class="text-center mb-10">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500/20 mb-4">
+                    <i data-lucide="check-circle" class="w-8 h-8 text-green-500"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-slate-100 mb-2">Interview Complete</h2>
+                <p class="text-slate-400">Here's your AI-generated performance analysis</p>
+            </div>
+
+            <!-- Overall Score Card -->
+            <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-3xl p-8 mb-6 shadow-2xl">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-8">
+                    <div class="text-center md:text-left">
+                        <h3 class="text-xl font-semibold text-slate-100 mb-2">Overall Performance</h3>
+                        <p class="text-slate-400 max-w-md">
+                            Based on your responses, confidence levels, and communication clarity, here's how you performed.
+                        </p>
+                    </div>
+                    
+                    <div class="relative w-40 h-40 flex items-center justify-center">
+                        <svg class="w-full h-full transform -rotate-90">
+                            <circle cx="80" cy="80" r="70" stroke="currentColor" stroke-width="12" fill="transparent" class="text-slate-800"></circle>
+                            <circle id="score-circle" cx="80" cy="80" r="70" stroke="currentColor" stroke-width="12" fill="transparent" 
+                                class="text-indigo-500 transition-all duration-1000" stroke-dasharray="440" stroke-dashoffset="440"></circle>
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span id="overall-score" class="text-4xl font-bold text-slate-100">0</span>
+                            <span class="text-xs text-slate-500 uppercase tracking-wider mt-1">Score</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metrics Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                
+                <!-- Confidence Score -->
+                <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg hover:border-indigo-500/50 transition-colors">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center">
+                            <i data-lucide="trending-up" class="w-5 h-5 text-indigo-400"></i>
+                        </div>
+                        <h4 class="font-semibold text-slate-100">Confidence</h4>
+                    </div>
+                    <div class="mb-3">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="text-slate-400">Score</span>
+                            <span id="confidence-value" class="text-indigo-400 font-semibold">0%</span>
+                        </div>
+                        <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="confidence-bar" class="h-full bg-indigo-500 rounded-full transition-all duration-1000 w-0"></div>
+                        </div>
+                    </div>
+                    <p id="confidence-text" class="text-sm text-slate-500">Analyzing response patterns...</p>
+                </div>
+
+                <!-- Communication -->
+                <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg hover:border-purple-500/50 transition-colors">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                            <i data-lucide="message-square" class="w-5 h-5 text-purple-400"></i>
+                        </div>
+                        <h4 class="font-semibold text-slate-100">Communication</h4>
+                    </div>
+                    <div class="mb-3">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="text-slate-400">Clarity</span>
+                            <span id="communication-value" class="text-purple-400 font-semibold">0%</span>
+                        </div>
+                        <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="communication-bar" class="h-full bg-purple-500 rounded-full transition-all duration-1000 w-0"></div>
+                        </div>
+                    </div>
+                    <p id="communication-text" class="text-sm text-slate-500">Evaluating speech patterns...</p>
+                </div>
+
+                <!-- Emotion Analysis -->
+                <div class="bg-slate-900/50 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg hover:border-pink-500/50 transition-colors">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-pink-500/20 flex items-center justify-center">
+                            <i data-lucide="smile" class="w-5 h-5 text-pink-400"></i>
+                        </div>
+                        <h4 class="font-semibold text-slate-100">Emotion</h4>
+                    </div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <span id="emotion-icon" class="text-3xl">😐</span>
+                        <div>
+                            <p id="emotion-label" class="font-semibold text-slate-100">Neutral</p>
+                            <p id="emotion-desc" class="text-xs text-slate-500">Analyzing tone...</p>
+                        </div>
+                    </div>
+                    <div id="emotion-tags" class="flex gap-2"></div>
+                </div>
+            </div>
+
+            <!-- AI Feedback Message -->
+            <div class="bg-gradient-to-br from-indigo-900/20 to-purple-900/20 border border-indigo-500/20 rounded-2xl p-6 mb-8">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="sparkles" class="w-5 h-5 text-indigo-400"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-indigo-300 mb-2">AI Feedback</h4>
+                        <p id="ai-feedback-text" class="text-slate-300 leading-relaxed">
+                            Your feedback will appear here once the interview is analysed.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="restartInterview()" 
+                    class="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/25 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
+                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                    <span>Start New Interview</span>
+                </button>
+                
+                <button onclick="downloadReport()" 
+                    class="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl border border-slate-700 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="download" class="w-5 h-5"></i>
+                    <span>Download Report</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="avatar.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
